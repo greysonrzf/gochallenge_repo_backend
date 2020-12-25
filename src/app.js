@@ -31,51 +31,67 @@ app.put("/repositories/:id", (request, response) => {
   const id = request.params.id
   const data = request.body
 
-  const { likes } = repositories.find(object => object.id === id)
+  try {
+    const { likes } = repositories.find(object => object.id === id)
 
-  const updatedRepoitory = {
-    id,
-    ...data,
-    likes,
+    const updatedRepository = {
+      id,
+      ...data,
+      likes,
+    }
+
+    repositories.map((repository, index) => {
+      if (repository.id === id) repositories[index] = updatedRepository
+    })
+
+    return response.json(updatedRepository)
+  } catch (err) {
+    return response.status(400).json({ Erro: "ID Not Found" })
   }
 
-  repositories.forEach((repository, index) => {
-    if (repository.id === id) repositories[index] = updatedRepoitory
-  })
-
-  return response.json(updatedRepoitory)
 });
 
 app.delete("/repositories/:id", (request, response) => {
   const id = request.params.id
 
-  repositories.forEach((repository, index) => {
-    if (repository.id === id) repositories.splice(index, 1)
-  })
+  const repositoryExists = repositories.find(object => object.id === id)
 
-  return response.json({ message: "Repository deleted." })
-});
+  if (repositoryExists) {
+    repositories.map((repository, index) => {
+      if (repository.id === id) repositories.splice(index, 1)
+    })
 
-app.post("/repositories/:id/like", (request, response) => {
-  const id = request.params.id
-
-  const { title, url, techs, likes } = repositories.find(object => object.id === id)
-
-  const increaseLikes = likes + 1
-
-  const updatedRepoitory = {
-    id,
-    title,
-    url,
-    techs,
-    likes: increaseLikes,
+    return response.status(204).json({ Message: "Repository Deleted" })
   }
 
-  repositories.forEach((repository, index) => {
-    if (repository.id === id) repositories[index] = updatedRepoitory
-  })
+  return response.status(400).json({ Erro: "ID Not Found" })
+});
 
-  return response.json(updatedRepoitory)
+app.put("/repositories/:id/like", (request, response) => {
+  const id = request.params.id
+
+  try {
+    const { title, url, techs, likes } = repositories.find(object => object.id === id)
+
+    const increaseLikes = likes + 1
+
+    const updatedRepository = {
+      id,
+      title,
+      url,
+      techs,
+      likes: increaseLikes,
+    }
+
+    repositories.map((repository, index) => {
+      if (repository.id === id) repositories[index] = updatedRepository
+    })
+
+    return response.json(updatedRepository)
+  } catch (err) {
+    return response.status(400).json({ Erro: "ID Not Found" })
+  }
+
 
 });
 
