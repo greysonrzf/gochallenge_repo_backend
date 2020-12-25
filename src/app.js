@@ -31,68 +31,47 @@ app.put("/repositories/:id", (request, response) => {
   const id = request.params.id
   const data = request.body
 
-  try {
-    const { likes } = repositories.find(object => object.id === id)
+  const findRepositoryIndex = repositories.findIndex(repository => repository.id === id)
 
-    const updatedRepository = {
-      id,
-      ...data,
-      likes,
-    }
+  if (findRepositoryIndex < 0) return response.status(400).json({ Erro: "Repository does not exists" })
 
-    repositories.map((repository, index) => {
-      if (repository.id === id) repositories[index] = updatedRepository
-    })
-
-    return response.json(updatedRepository)
-  } catch (err) {
-    return response.status(400).json({ Erro: "ID Not Found" })
+  const updatedRepository = {
+    id,
+    ...data,
+    likes: repositories[findRepositoryIndex].likes
   }
+
+  repositories[findRepositoryIndex] = updatedRepository
+
+  return response.json(updatedRepository)
+
 
 });
 
 app.delete("/repositories/:id", (request, response) => {
-  const id = request.params.id
+  const { id } = request.params
 
-  const repositoryExists = repositories.find(object => object.id === id)
+  const findRepositoryIndex = repositories.findIndex(repository => repository.id === id)
 
-  if (repositoryExists) {
-    repositories.map((repository, index) => {
-      if (repository.id === id) repositories.splice(index, 1)
-    })
-
-    return response.status(204).json({ Message: "Repository Deleted" })
+  if (findRepositoryIndex >= 0) {
+    repositories.splice(findRepositoryIndex, 1)
+  } else {
+    return response.status(400).json({ error: "Repository does not exists" })
   }
 
-  return response.status(400).json({ Erro: "ID Not Found" })
+  return response.status(204).send()
 });
 
 app.put("/repositories/:id/like", (request, response) => {
-  const id = request.params.id
+  const { id } = request.params
 
-  try {
-    const { title, url, techs, likes } = repositories.find(object => object.id === id)
+  const findRepositoryIndex = repositories.findIndex(repository => repository.id === id)
 
-    const increaseLikes = likes + 1
+  if (findRepositoryIndex < 0) return response.status(400).json({ Erro: "Repository does not exists" })
 
-    const updatedRepository = {
-      id,
-      title,
-      url,
-      techs,
-      likes: increaseLikes,
-    }
+  repositories[findRepositoryIndex].likes++
 
-    repositories.map((repository, index) => {
-      if (repository.id === id) repositories[index] = updatedRepository
-    })
-
-    return response.json(updatedRepository)
-  } catch (err) {
-    return response.status(400).json({ Erro: "ID Not Found" })
-  }
-
-
+  return response.json(repositories[findRepositoryIndex])
 });
 
 module.exports = app;
